@@ -1,0 +1,18 @@
+<%- include('../includes/head.ejs') %>
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <main class="centered">
+            <h1><%= pageTitle%></h1>
+            <hr>
+            <div class="image">
+              <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+            </div>
+            <h2><%= product.description%></h2>
+            <!-- post request에서는 url의 요청본문에 
+            데이터를 넣지 않아도 됨. hidden input 사용.
+            -->
+            <%- include("../includes/add-to-cart.ejs") %>
+        </main>
+        <%- include('../includes/end.ejs') %>
