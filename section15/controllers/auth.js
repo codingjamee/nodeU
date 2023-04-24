@@ -19,14 +19,33 @@ exports.getSignup = (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
-  User.findById("643f35d7e070031fd4f13afb")
+  const email = req.body.email;
+  const password = req.body.password;
+
+  User.findOne({ email: email })
     .then((user) => {
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-      req.session.save((err) => {
-        console.log(err);
-        res.redirect("/");
-      });
+      if (!user) {
+        return res.redirect("/login");
+      }
+      bcrypt
+        .compare(password, user.password)
+        .then((doMatch) => {
+          //일치와 불일치 모두 여기에 도달함
+          if (doMatch) {
+            //match할 때만(불리언값) 세션 설정
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            return req.session.save((err) => {
+              console.log(err);
+              res.redirect("/");
+            });
+          }
+          res.redirect("/login");
+        })
+        .catch((err) => {
+          console.log(err);
+          res.redirect("/login");
+        });
     })
     .catch((err) => console.log(err));
 };
