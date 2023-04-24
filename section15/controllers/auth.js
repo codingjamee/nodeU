@@ -45,20 +45,21 @@ exports.postSignup = (req, res, next) => {
       //bcrypt의 hash메서드 :
       //1번째 인수 해시화 하고 싶은 문자열,
       //2번째 인수 salt 몇차례 해싱을 적용할 것인지
-      return bcrypt.hash(password, 12);
-    })
-    .then((hashedPassword) => {
-      const user = new User({
-        email: email,
-        password: hashedPassword,
-        cart: { items: [] },
-      });
-      return user.save();
+      return bcrypt
+        .hash(password, 12)
+        .then((hashedPassword) => {
+          const user = new User({
+            email: email,
+            password: hashedPassword,
+            cart: { items: [] },
+          });
+          return user.save();
+        })
+        .then((result) => {
+          res.redirect("/login");
+        });
     })
 
-    .then((result) => {
-      res.redirect("/login");
-    })
     .catch((err) => {
       console.log(err);
     });
