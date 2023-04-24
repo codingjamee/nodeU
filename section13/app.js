@@ -3,6 +3,7 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const mongoURI = require("./dev");
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -33,14 +34,11 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    "mongodb+srv://jennerCoding:oC38fzkDAMaqTZa1@cluster0.7lqdxbj.mongodb.net/shop",
-    {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(mongoURI, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+  })
   .then((result) => {
     User.findOne().then((user) => {
       if (!user) {
