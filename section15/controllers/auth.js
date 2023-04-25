@@ -6,7 +6,8 @@ exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    isAuthenticated: false,
+    //post login부분에서 명시한 key
+    errorMessage: req.flash("error"),
   });
 };
 
@@ -14,7 +15,6 @@ exports.getSignup = (req, res, next) => {
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "Signup",
-    isAuthenticated: false,
   });
 };
 
@@ -25,6 +25,8 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
+        //알림이 저장될 key를 부여받게 됨
+        req.flash("error", "Invalid email or password");
         return res.redirect("/login");
       }
       bcrypt
