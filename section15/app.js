@@ -56,6 +56,14 @@ app.use((req, res, next) => {
     .catch((err) => console.log(err));
 });
 
+//모든 요청에 대해 렌더링 뷰에서 아래의 두 필드가 설정됨
+app.use((req, res, next) => {
+  //local variable을 설정
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);

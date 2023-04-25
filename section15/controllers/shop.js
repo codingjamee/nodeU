@@ -38,9 +38,6 @@ exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
-        isAuthenticated: req.session.isLoggedIn,
-        //csrf미들웨어에 의해 제공됨
-        csrfToken: req.csrfToken(),
       });
     })
     .catch((err) => {
