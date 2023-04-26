@@ -188,3 +188,29 @@ exports.postReset = (req, res, next) => {
       });
   });
 };
+
+exports.getNewPassword = (req, res, next) => {
+  const token = req.params.token;
+  User.findOne({
+    //token이 일치하고 현재시간보다 expiration이 더 나중인 경우(만료되지 않은 경우)에만 user를 찾음
+    resetToken: token,
+    resetTotkenExpiration: { $gt: Date.now() },
+  })
+    .then((user) => {
+      let message = req.flash("error");
+      if (message.length > 0) {
+        message = message[0];
+      } else {
+        message = null;
+      }
+      res.render("auth/new-password", {
+        path: "/new-password",
+        pageTitle: "New Password",
+        //post login부분에서 명시한 key
+        errorMessage: message,
+        //post요청에 id를 넣어 새로운 비밀번호를 저장할 id확인하기
+        userId: user._id.toString(),
+      });
+    })
+    .catch((err) => console.log(err));
+};

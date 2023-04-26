@@ -18,4 +18,7 @@ router.get("/reset", authController.getReset);
 
 router.post("/reset", authController.postReset);
 
+//다이내믹한 token파라미터 반드시 컨트롤러에서 해당 변수로 찾아야함
+router.post("/reset/:token", authController.getNewPassword);
+
 module.exports = router;
