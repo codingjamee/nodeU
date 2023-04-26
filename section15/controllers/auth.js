@@ -1,9 +1,13 @@
+//안전하고 고유한 무작위 값 생성 //node의 빌트인 메서드
+const crypto = require("crypto");
+
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
 const sendGridApikey = require("../dev").sendGridApikey;
 
 const User = require("../models/user");
+const { reset } = require("nodemon");
 
 //transporter초기화
 //auth객체 안에 apikey 추가하여 설정
@@ -142,5 +146,45 @@ exports.getReset = (req, res, next) => {
     path: "/reset",
     pageTitle: "Reset Password",
     errorMessage: message,
+  });
+};
+
+exports.postReset = (req, res, next) => {
+  //resetpassword 버튼을 누르면 토큰을 생성해 메일로 보내주기
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect("/reset");
+    }
+    //hex는 16진법 값을 일반 아스키 문자로 변환하는데 필요한 정보
+    const token = buffer.toString("hex");
+
+    //reset.ejs에서 받아온 email field
+    User.findOne({ email: req.body.email })
+      .then((user) => {
+        //req.body.email이 user에 없다면 에러메시지를 플래쉬 해줌
+        if (!user) {
+          req.flash("error", "No account with that email found.");
+          return res.redirect("/reset");
+        }
+        user.resetToken = token;
+        user.resetTokenExpiration = Date.now() + 36000000;
+        return user.save();
+      })
+      .then((result) => {
+        res.redirect("/");
+        transporter.sendMail({
+          to: req.body.email,
+          from: "hurjane@naver.com",
+          subject: "Password reset",
+          html: `
+          <p>You requested a password reset</p>
+          <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>
+          `,
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 };
