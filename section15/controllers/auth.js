@@ -1,6 +1,20 @@
 const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+const sendGridApikey = require("../dev").sendGridApikey;
 
 const User = require("../models/user");
+
+//transporter초기화
+//auth객체 안에 apikey 추가하여 설정
+const transporter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key: sendGridApikey,
+    },
+  })
+);
+//createTransport메서드 호출, sendgridTransport를 입력해 함수로 실행
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash("error");
@@ -91,7 +105,17 @@ exports.postSignup = (req, res, next) => {
           return user.save();
         })
         .then((result) => {
+          //회원가입시 메일발송
           res.redirect("/login");
+          return transporter.sendMail({
+            to: email,
+            from: "hurjane@naver.com",
+            subject: "Sign up succeeded!",
+            html: "<h1>You Successfully signed up!</h1>",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
         });
     })
 
