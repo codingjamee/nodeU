@@ -194,7 +194,7 @@ exports.getNewPassword = (req, res, next) => {
   User.findOne({
     //token이 일치하고 현재시간보다 expiration이 더 나중인 경우(만료되지 않은 경우)에만 user를 찾음
     resetToken: token,
-    resetTotkenExpiration: { $gt: Date.now() },
+    resetTokenExpiration: { $gt: Date.now() },
   })
     .then((user) => {
       let message = req.flash("error");
@@ -210,7 +210,37 @@ exports.getNewPassword = (req, res, next) => {
         errorMessage: message,
         //post요청에 id를 넣어 새로운 비밀번호를 저장할 id확인하기
         userId: user._id.toString(),
+        passwordToken: token,
       });
     })
     .catch((err) => console.log(err));
+};
+
+exports.postNewPassword = (req, res, next) => {
+  const newPassword = req.body.password;
+  const userId = req.body.userId;
+  const passwordToken = req.body.passwordToken;
+  let resetUser;
+
+  User.findOne({
+    resetToken: passwordToken,
+    resetTokenExpiration: { $gt: Date.now() },
+    _id: userId,
+  })
+    .then((user) => {
+      resetUser = user;
+      return bcrypt.hash(newPassword, 12);
+    })
+    .then((hashedPassword) => {
+      resetUser.password = hashedPassword;
+      resetUser.resetToken = undefined;
+      resetUser.resetTokenExpiration = undefined;
+      return resetUser.save();
+    })
+    .then((result) => {
+      res.redirect("/login");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
