@@ -67,9 +67,9 @@ exports.postLogin = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors.array());
-    return res.status(422).render("auth/signup", {
-      path: "/signup",
-      pageTitle: "Signup",
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "Login",
       errorMessage: errors.array()[0].msg,
       oldInput: {
         email: email,

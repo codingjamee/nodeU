@@ -17,7 +17,7 @@ router.post(
       .isEmail()
       .withMessage("Please enter a valid email address.")
       .normalizeEmail(),
-    body("confirmPassword", "Password has to be valid.")
+    body("password", "Password has to be valid.")
       .isLength({ min: 5 })
       .isAlphanumeric()
       .trim(),
