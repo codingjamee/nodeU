@@ -22,6 +22,35 @@ const store = new MongoDBStore({
 //csrf초기화
 const csrfProtection = csrf();
 
+//configuration 설정
+//diskStorage는 multer와 함께 사용하는 저장소 엔진.
+//js객체를 전달하여 구성
+//파일이름과 저장위치를 제어
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+  //destination은 함수. 설정이 완료된 뒤 호출하게 됨
+  //cb는 첫번째가 null. 오류가 있을 경우 multer에게 알림
+  //두번째는 우리가 설정하려는 파일 이름
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+  //파일을 저장하고 싶은 경우 두번째 파라미터로 true, 아니면 false
+  //파일 타입을 확인하여 저장 혹은 거절
+};
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -30,8 +59,13 @@ const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(multer({ dest: "images" }).single("image"));
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+);
+//dest 속성 multer로 images 네임의 파일 전소압ㄷ기
+//storage
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(
   session({
     secret: "my secret",
