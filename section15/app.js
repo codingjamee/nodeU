@@ -64,7 +64,7 @@ app.use((req, res, next) => {
       next();
     })
     .catch((err) => {
-      throw new Error(err);
+      next(new Error(err));
     });
 });
 
@@ -82,6 +82,12 @@ app.use(authRoutes);
 
 app.use("/500", errorController.get500);
 app.use(errorController.get404);
+
+app.use((err, req, res, next) => {
+  res.redirect("/500");
+});
+//오류가 전달된 next를 호출하는 경우 4개 인수를 받은
+//현재 오류처리 미들웨어로 곧바로 이동
 
 mongoose
   .connect(MONGODB_URI)
