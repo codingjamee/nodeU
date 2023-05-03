@@ -158,6 +158,12 @@ exports.getInvoice = (req, res, next) => {
     if (err) {
       return next(err);
     }
+    //브라우저에서 파일 열리게 하기
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="' + invoiceName + '"'
+    );
     res.send(data);
   });
 };
