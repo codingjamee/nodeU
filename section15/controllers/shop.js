@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const pdfkitDocument = require("pdfkit");
+const PDFDocument = require("pdfkit");
 
 const Product = require("../models/product");
 const Order = require("../models/order");
@@ -157,15 +157,15 @@ exports.getInvoice = (req, res, next) => {
   Order.findById(orderId)
     .then((order) => {
       if (!order) {
-        return next(new Error("No order found"));
+        return next(new Error("No order found."));
       }
       if (order.user.userId.toString() !== req.user._id.toString()) {
         return next(new Error("Unauthorized"));
       }
-      const invoiceName = "invoices-" + orderId + ".pdf";
+      const invoiceName = "invoice-" + orderId + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
 
-      const pdfDoc = new pdfkitDocument();
+      const pdfDoc = new PDFDocument();
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
@@ -174,30 +174,28 @@ exports.getInvoice = (req, res, next) => {
       pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
 
-      pdfDoc.text("Hello world");
+      pdfDoc.fontSize(26).text("Invoice", {
+        underline: true,
+      });
+      pdfDoc.text("-----------------------");
+      let totalPrice = 0;
+      order.products.forEach((prod) => {
+        totalPrice += prod.quantity * prod.product.price;
+        pdfDoc
+          .fontSize(14)
+          .text(
+            prod.product.title +
+              " - " +
+              prod.quantity +
+              " x " +
+              "$" +
+              prod.product.price
+          );
+      });
+      pdfDoc.text("---");
+      pdfDoc.fontSize(20).text("Total Price: $" + totalPrice);
 
       pdfDoc.end();
-      // fs.readFile(invoicePath, (err, data) => {
-      //   if (err) {
-      //     return next(err);
-      //   }
-      //   //브라우저에서 파일 열리게 하기
-      //   res.setHeader("Content-Type", "application/pdf");
-      //   res.setHeader(
-      //     "Content-Disposition",
-      //     'inline; filename="' + invoiceName + '"'
-      //   );
-      //   res.send(data);
-      // });
-      // const file = fs.createReadStream(invoicePath);
-
-      // file.pipe(res);
-      //pipe메서드를 통해 res로 읽어들인 데이터를 전달
-      //res는 쓰기가 가능한 스트림
-      //읽기 가능한 스트림을 사용해 출력값을 쓰기 스트림으로 전달
-
-      //브라우저에 전달해 브라우저가 들어오는 데이터조각을
-      //하나의 최종 파일로 결합시키도록 하는것
     })
-    .catch((err = next(err)));
+    .catch((err) => next(err));
 };
