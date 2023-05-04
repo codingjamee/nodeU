@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const pdfkitDocument = require("pdfkit");
+
 const Product = require("../models/product");
 const Order = require("../models/order");
 
@@ -157,11 +159,24 @@ exports.getInvoice = (req, res, next) => {
       if (!order) {
         return next(new Error("No order found"));
       }
-      if (order.user.userId.toString() === req.user._id.toString()) {
+      if (order.user.userId.toString() !== req.user._id.toString()) {
         return next(new Error("Unauthorized"));
       }
       const invoiceName = "invoices-" + orderId + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
+
+      const pdfDoc = new pdfkitDocument();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="' + invoiceName + '"'
+      );
+      pdfDoc.pipe(fs.createWriteStream(invoicePath));
+      pdfDoc.pipe(res);
+
+      pdfDoc.text("Hello world");
+
+      pdfDoc.end();
       // fs.readFile(invoicePath, (err, data) => {
       //   if (err) {
       //     return next(err);
@@ -174,13 +189,9 @@ exports.getInvoice = (req, res, next) => {
       //   );
       //   res.send(data);
       // });
-      const file = fs.createReadStream(invoicePath);
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        'inline; filename="' + invoiceName + '"'
-      );
-      file.pipe(res);
+      // const file = fs.createReadStream(invoicePath);
+
+      // file.pipe(res);
       //pipe메서드를 통해 res로 읽어들인 데이터를 전달
       //res는 쓰기가 가능한 스트림
       //읽기 가능한 스트림을 사용해 출력값을 쓰기 스트림으로 전달
