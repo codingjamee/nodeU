@@ -5,11 +5,39 @@ const bodyParser = require("body-parser");
 const feedRoutes = require("./routes/feed");
 const MONGODB_URI = require("./dev").mongoURI;
 const mongoose = require("mongoose");
+const multer = require("multer");
 
 const app = express();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    //저장할 위치 지정
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    //저장할 파일 명 지정
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/png"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); //application/json
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+  //.single : image 단일 파일을 추출
+);
 
 // /images로 향하는 요청을 정적으로 제공하게 될 폴더
 app.use("/images", express.static(path.join(__dirname, "images")));

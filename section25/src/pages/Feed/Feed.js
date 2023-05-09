@@ -107,7 +107,13 @@ class Feed extends Component {
     this.setState({
       editLoading: true,
     });
-    // Set up data (with image!)
+    //파일전송은 json으로 하면 안됨 너무 커짐
+    const formData = new FormData();
+    //첫번째는 인수명, 두번째는 실제 데이터
+    formData.append("title", postData.title);
+    formData.append("content", postData.content);
+    //REST API에서 찾게 될 이름과 같은 image로 함
+    formData.append("image", postData.image);
     let url = "http://localhost:8080/feed/post";
     let method = "POST";
     if (this.state.editPost) {
@@ -116,13 +122,7 @@ class Feed extends Component {
 
     fetch(url, {
       method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: postData.title,
-        content: postData.content,
-      }),
+      body: formData,
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
