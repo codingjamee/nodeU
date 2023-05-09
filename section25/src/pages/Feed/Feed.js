@@ -22,7 +22,7 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch("URL")
+    fetch("http://localhost:8080/feed/posts")
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch user status.");
@@ -58,6 +58,8 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
+        console.log("GET POSTS!");
+        console.log(resData);
         this.setState({
           posts: resData.posts,
           totalPosts: resData.totalItems,
@@ -129,6 +131,7 @@ class Feed extends Component {
         return res.json();
       })
       .then((resData) => {
+        console.log(resData);
         const post = {
           _id: resData.post._id,
           title: resData.post.title,
