@@ -2,13 +2,27 @@ const fs = require("fs");
 const path = require("path");
 const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const post = require("../models/post");
 
 exports.getPosts = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 2;
+  let totalItems;
+
+  //documents갯수 세어보기
   Post.find()
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
+    })
     .then((posts) => {
       res.status(200).json({
         message: "Fetch posts successfully",
         posts: posts,
+        totalItems: totalItems,
       });
     })
     .catch((err) => {
@@ -125,4 +139,32 @@ exports.updatePost = (req, res, next) => {
 const clearImage = (filePath) => {
   filePath = path.join(__dirname, "..", filePath);
   fs.unlink(filePath, (err) => console.log(err));
+};
+
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId;
+  Post.findById(postId)
+    //삭제요청자가 게시물 생성자인지 확인을 위해
+    //findByIdAndRemove를 사용하지 않음
+    .then((post) => {
+      if (!post) {
+        const err = new Error("could not find the post");
+        err.statusCode = 404;
+        throw err;
+      }
+      if (post.imageUrl) {
+        clearImage(post.imageUrl);
+      }
+      return Post.findByIdAndRemove(postId);
+    })
+    .then((result) => {
+      console.log(result);
+      return res.status(200).json({ message: "Deleted post." });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
