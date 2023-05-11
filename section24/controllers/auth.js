@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const secretKey = require("../dev").secretKey;
 
 const User = require("../models/user");
 
@@ -68,7 +69,7 @@ exports.login = (req, res, next) => {
           userId: loadedUser._id.toString(),
           //두번째 인자는 서버에만 있는 비공개키 최대한 길게!
         },
-        "somesupersupersecrete",
+        secretKey,
         //세번째 인자는 exire time
         { expiresIn: "1h" }
       ); //새로운 서명을 만들고 jwt토큰에 포함
