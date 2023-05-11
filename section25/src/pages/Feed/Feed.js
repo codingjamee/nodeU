@@ -22,7 +22,11 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch("http://localhost:8080/feed/posts")
+    fetch("http://localhost:8080/feed/posts", {
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+      },
+    })
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch user status.");
@@ -131,6 +135,9 @@ class Feed extends Component {
     fetch(url, {
       method: method,
       body: formData,
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+      },
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
@@ -183,7 +190,12 @@ class Feed extends Component {
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
     let url = "http://localhost:8080/feed/post/" + postId;
-    fetch(url, { method: "DELETE" })
+    fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+      },
+    })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Deleting a post failed!");
