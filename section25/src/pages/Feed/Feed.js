@@ -89,13 +89,13 @@ class Feed extends Component {
           throw new Error("Fetching posts failed!");
         }
         this.setState({
-          posts: resData.posts.posts.map((post) => {
+          posts: resData.data.posts.posts.map((post) => {
             return {
               ...post,
               imagePath: post.imageUrl,
             };
           }),
-          totalPosts: resData.posts.posts.totalPosts,
+          totalPosts: resData.data.posts.posts.totalPosts,
           postsLoading: false,
         });
       })
