@@ -63,6 +63,7 @@ class Feed extends Component {
             _id
             title
             content
+            imageUrl
             creator {
               name
             }
@@ -143,36 +144,48 @@ class Feed extends Component {
     //파일전송은 json으로 하면 안됨 너무 커짐
     const formData = new FormData();
     //첫번째는 인수명, 두번째는 실제 데이터
-    formData.append("title", postData.title);
-    formData.append("content", postData.content);
     //REST API에서 찾게 될 이름과 같은 image로 함
     formData.append("image", postData.image);
-
-    let graphqlQuery = {
-      query: `
-      mutation{
-        createPost(postInput: {title: "${postData.title}", content: "${postData.content}", imageUrl: "some url"}) {
-          _id
-          title
-          content
-          imageUrl
-          creator {
-            name 
-          }
-          createdAt
-        }
-      }
-    `,
-    };
-
-    fetch("http://localhost:8080/graphql", {
-      method: "POST",
-      body: JSON.stringify(graphqlQuery),
+    if (this.state.editPost) {
+      formData.append("oldPath", this.state.editPost.imagePath);
+    }
+    fetch("http://localhost:8080/post-image", {
+      method: "PUT",
       headers: {
         Authorization: "Bearer " + this.props.token,
-        "Content-Type": "application/json",
       },
+      body: formData,
     })
+      .then((res) => res.json())
+      .then((fileResData) => {
+        const imageUrl = fileResData.filePath;
+        let graphqlQuery = {
+          query: `
+          mutation {
+            createPost(postInput: {title: "${postData.title}", content: "${postData.content}", imageUrl: "${imageUrl}"}) {
+              _id
+              title
+              content
+              imageUrl
+              creator {
+                name
+              }
+              createdAt
+            }
+          }
+        `,
+        };
+
+        return fetch("http://localhost:8080/graphql", {
+          method: "POST",
+          body: JSON.stringify(graphqlQuery),
+          headers: {
+            Authorization: "Bearer " + this.props.token,
+            "Content-Type": "application/json",
+          },
+        });
+      })
+
       .then((res) => {
         return res.json();
       })
@@ -192,6 +205,7 @@ class Feed extends Component {
           content: resData.data.createPost.content,
           creator: resData.data.createPost.creator,
           createdAt: resData.data.createPost.createdAt,
+          imagePath: resData.data.createPost.imageUrl,
         };
         this.setState((prevState) => {
           let updatedPosts = [...prevState.posts];
