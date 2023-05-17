@@ -1,6 +1,5 @@
-const { clear } = require("console");
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
 
 const clearImage = (filePath) => {
   filePath = path.join(__dirname, "..", filePath);
