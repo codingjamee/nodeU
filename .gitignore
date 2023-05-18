@@ -3,3 +3,5 @@
 **/nodemon.json
 **/dev.js
 **/access.log
+**/server.key
+**/server.cert
