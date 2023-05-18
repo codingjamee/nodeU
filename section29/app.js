@@ -29,8 +29,8 @@ const store = new MongoDBStore({
 });
 const csrfProtection = csrf();
 
-const privateKey = fs.readFileSync("server.key");
-const certificate = fs.readFileSync("server.cert");
+// const privateKey = fs.readFileSync("server.key");
+// const certificate = fs.readFileSync("server.cert");
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -65,7 +65,8 @@ const accessLogStream = fs.createWriteStream(
   { flags: "a" }
 );
 app.use(helmet());
-app.use(compression());
+app.use(compression()); //heroku는 compression을 자동지원하지 않으므로 수동으로 해주기
+
 app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(bodyParser.urlencoded({ extended: false }));
